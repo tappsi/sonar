@@ -1,0 +1,5 @@
+%{"gen_rpc": {:hex, :gen_rpc, "2.1.0", "c7f5bb64f105aacbff9d865928b28f7f602bbad9a414fbc36b4e3b6c6d42bd3a", [:rebar3], [{:hut, "~> 1.2", [hex: :hut, optional: false]}, {:ssl_verify_fun, "~> 1.1", [hex: :ssl_verify_fun, optional: false]}]},
+  "hash_ring": {:hex, :hash_ring, "0.4.0", "5b6fc75da078865dd0e0007e4145a3e27ff07963e090f822ff99349a577296ed", [:rebar3], []},
+  "hut": {:hex, :hut, "1.2.0", "0089df0faa2827c605bbada88153f24fff5ea7a4be32ecf0250a7fdc2719cafb", [:"erlang.mk", :rebar, :rebar3], []},
+  "phoenix_pubsub": {:hex, :phoenix_pubsub, "1.0.1", "c10ddf6237007c804bf2b8f3c4d5b99009b42eca3a0dfac04ea2d8001186056a", [:mix], []},
+  "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.1", "28a4d65b7f59893bc2c7de786dec1e1555bd742d336043fe644ae956c3497fbe", [:make, :rebar], []}}
