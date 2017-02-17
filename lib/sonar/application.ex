@@ -6,6 +6,16 @@ defmodule Sonar.Application do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
+    srv = Application.get_env(:sonar, :service)
+
+    Application.stop(:gen_rpc)
+
+    :ok = Application.put_env(:gen_rpc, :tcp_client_port, srv[:client])
+    :ok = Application.put_env(:gen_rpc, :tcp_server_port, srv[:port])
+    :ok = Application.put_env(:gen_rpc, :default_client_driver, srv[:protocol])
+
+    Application.start(:gen_rpc)
+
     echo =
       :sonar
       |> Application.get_env(:echo, [])
