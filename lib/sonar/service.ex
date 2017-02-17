@@ -38,14 +38,14 @@ defmodule Sonar.Service do
   Returns the promised answer from a previous `async_call/4`
   """
   def yield(key),
-    do: :gen_rpc.yield(key) |> parse_reply()
+    do: :gen_rpc.yield(key) |> parse_reply({:undefined, :undefined})
 
   @doc "Non-blocking version of yield/1"
   def nb_yield(key),
-    do: :gen_rpc.nb_yield(key) |> parse_reply()
+    do: :gen_rpc.nb_yield(key) |> parse_reply({:undefined, :undefined})
 
   def nb_yield(key, timeout),
-    do: :gen_rpc.nb_yield(key, timeout) |> parse_reply()
+    do: :gen_rpc.nb_yield(key, timeout) |> parse_reply({:undefined, :undefined})
 
   @doc """
   The function evaluates `apply(mod, fun, args)` on the specified
@@ -103,47 +103,53 @@ defmodule Sonar.Service do
 
   # Internal functions
 
-  defp do_call(_service, node, mod, fun, args, timeout) do
+  defp do_call(service, node, mod, fun, args, timeout) do
     :gen_rpc.call(node, mod, fun, args, timeout)
-    |> parse_reply()
+    |> parse_reply({service, node})
   end
 
-  defp do_cast(_service, node, mod, fun, args) do
+  defp do_cast(service, node, mod, fun, args) do
     :gen_rpc.cast(node, mod, fun, args)
-    |> parse_reply()
+    |> parse_reply({service, node})
   end
 
-  defp do_async_call(_service, node, mod, fun, args) do
+  defp do_async_call(service, node, mod, fun, args) do
     :gen_rpc.async_call(node, mod, fun, args)
-    |> parse_reply()
+    |> parse_reply({service, node})
   end
 
-  defp do_multicall(_service, nodes, mod, fun, args, timeout) do
+  defp do_multicall(service, nodes, mod, fun, args, timeout) do
     :gen_rpc.multicall(nodes, mod, fun, args, timeout)
-    |> parse_reply()
+    |> parse_reply({service, nodes})
   end
 
-  defp do_multicast(_service, nodes, mod, fun, args) do
+  defp do_multicast(service, nodes, mod, fun, args) do
     :gen_rpc.eval_everywhere(nodes, mod, fun, args)
-    |> parse_reply()
+    |> parse_reply({service, nodes})
   end
 
-  defp do_abcast(_service, nodes, name, msg) do
+  defp do_abcast(service, nodes, name, msg) do
     :gen_rpc.abcast(nodes, name, msg)
-    |> parse_reply()
+    |> parse_reply({service, nodes})
   end
 
-  defp do_sbcast(_service, nodes, name, msg) do
+  defp do_sbcast(service, nodes, name, msg) do
     :gen_rpc.sbcast(nodes, name, msg)
-    |> parse_reply()
+    |> parse_reply({service, nodes})
   end
 
   def with_node({service, key}, fun) do
-    Sonar.find_service(service, key) |> fun.()
+    case Sonar.find_service(service, key) do
+      {:error, _} = error -> error
+      node -> fun.(node)
+    end
   end
 
   defp with_nodes({service, key, n}, fun) do
-    Sonar.find_service(service, key, n) |> fun.()
+    case Sonar.find_service(service, key, n) do
+      {:error, _} = error -> error
+      nodes -> fun.(nodes)
+    end
   end
   defp with_nodes(service, fun) do
     service
@@ -152,10 +158,10 @@ defmodule Sonar.Service do
     |> fun.()
   end
 
-  defp parse_reply({:badrpc, _} = error), do: {:error, error}
-  defp parse_reply({:badtcp, _} = error), do: {:error, error}
-  defp parse_reply(true),                 do: :ok
-  defp parse_reply(:abcast),              do: :ok
-  defp parse_reply(:sbcast),              do: :ok
-  defp parse_reply(reply),                do: reply
+  defp parse_reply({:badrpc, _} = error, dest), do: {:error, error, dest}
+  defp parse_reply({:badtcp, _} = error, dest), do: {:error, error, dest}
+  defp parse_reply(true, dest),                 do: {:ok, dest}
+  defp parse_reply(:abcast, dest),              do: {:ok, dest}
+  defp parse_reply(:sbcast, dest),              do: {:ok, dest}
+  defp parse_reply(reply, dest),                do: {:ok, reply, dest}
 end
