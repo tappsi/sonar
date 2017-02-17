@@ -4,13 +4,31 @@ defmodule Sonar.Service do
   """
 
   @timeout :timer.seconds(5)
+  @events  Sonar.Events
 
   # API
 
+  @doc "Evaluates `apply(mod, fun, args)` on `node` and returns the response"
+  def direct_call(node, args, timeout \\ @timeout) do
+    :gen_rpc.call(node, @events, :notify, args, timeout)
+    |> parse_reply({:direct, node})
+  end
+
+  def direct_call(node, mod, fun, args, timeout \\ @timeout) do
+    :gen_rpc.call(node, mod, fun, args, timeout)
+    |> parse_reply({:direct, node})
+  end
+
+  @doc "Evaluates `apply(mod, fun, args)` on `node`"
+  def direct_cast(node, args) do
+    :gen_rpc.cast(node, @events, :notify, args)
+    |> parse_reply({:direct, node})
+  end
+
   @doc """
-  Evaluates `apply(mod, fun, args)` on `service` node and returns the
-  corresponding value `res`, or `{:error, {:badrpc, reason}` if the
-  call fails
+  Evaluates `apply(mod, fun, args)` on node for `service` hashed by `key`
+  and returns the response
+
   """
   def call({service, key}, mod, fun, args, timeout \\ @timeout) do
     with_node({service, key}, &do_call(service, &1, mod, fun, args, timeout))
