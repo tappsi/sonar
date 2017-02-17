@@ -3,12 +3,28 @@ defmodule Sonar.Application do
 
   use Application
 
+  @nobootstrap "You need to specify a bootstrap node in your config environment!"
+
+  require Logger
+
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
+    bootstrap_node = Application.get_env(:sonar, :bootstrap) || raise @nobootstrap
     srv = Application.get_env(:sonar, :service)
 
     Application.stop(:gen_rpc)
+
+    case Node.connect(bootstrap_node) do
+      :ignored -> :noop
+      true     ->
+        Logger.debug "#{node()}: bootstrap success!"
+        :noop
+      false    ->
+        reason = {bootstrap_node, :noconnect}
+        Logger.error "#{node()}: bootstrap failed: #{inspect reason}"
+        :noop
+    end
 
     :ok = Application.put_env(:gen_rpc, :tcp_client_port, srv[:client])
     :ok = Application.put_env(:gen_rpc, :tcp_server_port, srv[:port])
