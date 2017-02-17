@@ -11,8 +11,8 @@ defmodule Sonar do
   # API
 
   @doc "Add a new service `type` with it's current `version`"
-  def add_service(type, version, node \\ node()) do
-    meta = %{state: :online, version: version}
+  def add_service(type, version, port, protocol \\ :tcp, node \\ node()) do
+    meta = %{state: :online, port: port, protocol: protocol, version: version}
     Tracker.track(@tracker, self(), type, node, meta)
   end
 
