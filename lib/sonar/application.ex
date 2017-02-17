@@ -15,10 +15,11 @@ defmodule Sonar.Application do
     opts = [pubsub[:name] || Phoenix.PubSub.Test.PubSub,
             pubsub[:opts] || []]
 
+    :sonar_rings = :ets.new(:sonar_rings, [:named_table, :public,
+                                           read_concurrency: true])
+
     children = [
-      supervisor(Sonar.RingSupervisor, []),
       supervisor(Task.Supervisor, [[name: Sonar.TaskSupervisor]]),
-      supervisor(Registry, [:unique, Sonar.RingRegistry]),
       supervisor(pubsub[:adapter] || Phoenix.PubSub.PG2, opts),
       worker(Sonar.Echo, [echo])
     ]
