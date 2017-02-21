@@ -3,6 +3,7 @@ defmodule Sonar.Service do
   RPC API for interacting with sonar registered services
   """
 
+  @rpc     Application.get_env(:sonar, :rpc, :gen_rpc)
   @timeout :timer.seconds(5)
   @events  Sonar.Events
 
@@ -10,18 +11,18 @@ defmodule Sonar.Service do
 
   @doc "Evaluates `apply(mod, fun, args)` on `node` and returns the response"
   def direct_call(node, args, timeout \\ @timeout) do
-    :gen_rpc.call(node, @events, :notify, args, timeout)
+    @rpc.call(node, @events, :notify, args, timeout)
     |> parse_reply({:direct, node})
   end
 
   def direct_call(node, mod, fun, args, timeout \\ @timeout) do
-    :gen_rpc.call(node, mod, fun, args, timeout)
+    @rpc.call(node, mod, fun, args, timeout)
     |> parse_reply({:direct, node})
   end
 
   @doc "Evaluates `apply(mod, fun, args)` on `node`"
   def direct_cast(node, args) do
-    :gen_rpc.cast(node, @events, :notify, args)
+    @rpc.cast(node, @events, :notify, args)
     |> parse_reply({:direct, node})
   end
 
@@ -56,14 +57,14 @@ defmodule Sonar.Service do
   Returns the promised answer from a previous `async_call/4`
   """
   def yield(key),
-    do: :gen_rpc.yield(key) |> parse_reply({:undefined, :undefined})
+    do: @rpc.yield(key) |> parse_reply({:undefined, :undefined})
 
   @doc "Non-blocking version of yield/1"
   def nb_yield(key),
-    do: :gen_rpc.nb_yield(key) |> parse_reply({:undefined, :undefined})
+    do: @rpc.nb_yield(key) |> parse_reply({:undefined, :undefined})
 
   def nb_yield(key, timeout),
-    do: :gen_rpc.nb_yield(key, timeout) |> parse_reply({:undefined, :undefined})
+    do: @rpc.nb_yield(key, timeout) |> parse_reply({:undefined, :undefined})
 
   @doc """
   The function evaluates `apply(mod, fun, args)` on the specified
@@ -122,37 +123,37 @@ defmodule Sonar.Service do
   # Internal functions
 
   defp do_call(service, node, mod, fun, args, timeout) do
-    :gen_rpc.call(node, mod, fun, args, timeout)
+    @rpc.call(node, mod, fun, args, timeout)
     |> parse_reply({service, node})
   end
 
   defp do_cast(service, node, mod, fun, args) do
-    :gen_rpc.cast(node, mod, fun, args)
+    @rpc.cast(node, mod, fun, args)
     |> parse_reply({service, node})
   end
 
   defp do_async_call(service, node, mod, fun, args) do
-    :gen_rpc.async_call(node, mod, fun, args)
+    @rpc.async_call(node, mod, fun, args)
     |> parse_reply({service, node})
   end
 
   defp do_multicall(service, nodes, mod, fun, args, timeout) do
-    :gen_rpc.multicall(nodes, mod, fun, args, timeout)
+    @rpc.multicall(nodes, mod, fun, args, timeout)
     |> parse_reply({service, nodes})
   end
 
   defp do_multicast(service, nodes, mod, fun, args) do
-    :gen_rpc.eval_everywhere(nodes, mod, fun, args)
+    @rpc.eval_everywhere(nodes, mod, fun, args)
     |> parse_reply({service, nodes})
   end
 
   defp do_abcast(service, nodes, name, msg) do
-    :gen_rpc.abcast(nodes, name, msg)
+    @rpc.abcast(nodes, name, msg)
     |> parse_reply({service, nodes})
   end
 
   defp do_sbcast(service, nodes, name, msg) do
-    :gen_rpc.sbcast(nodes, name, msg)
+    @rpc.sbcast(nodes, name, msg)
     |> parse_reply({service, nodes})
   end
 
