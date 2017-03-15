@@ -53,7 +53,10 @@ All documentation non strictly related to source code is found in the
 explicitly stated in the [CONTRIBUTING.md](CONTRIBUTING.md)
 guidelines, the same principles apply to the wiki.
 
-
 ## License
 
 Copyright (c) 2017 Tappsi S.A.S
+
+This work is free. You can redistribute it and/or modify it under the
+terms of the MIT License. See the [LICENSE](LICENSE) file for more
+details.
