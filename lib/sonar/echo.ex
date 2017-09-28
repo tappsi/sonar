@@ -28,7 +28,7 @@ defmodule Sonar.Echo do
   def handle_diff(diff, %{pubsub: pubsub} = state) do
     for {type, {joins, leaves}} <- diff do
       unless HashRing.exists?(type) do
-        :ok  = HashRing.create(type)
+        :ok = HashRing.create(type)
       end
 
       for {lnode, meta} <- leaves do
