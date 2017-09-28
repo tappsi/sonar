@@ -69,7 +69,7 @@ defmodule Sonar.HashRing do
   end
 
   defp new_ring(service) do
-    ring = :hash_ring.make []
+    ring = :hash_ring.make([])
     true = :ets.insert_new(:sonar_rings, {service, ring})
     :ok
   end
